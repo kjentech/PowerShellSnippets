@@ -49,7 +49,8 @@ param (
         })][string[]]$FileTypes = @(".log", ".txt"),
     
     [Parameter(ParameterSetName = 'ByFileNames')]
-    [string[]]$FileNamesRegex
+    [string[]]$FileNamesRegex,
+    [switch]$IncludeSubDirectories
 )
         
 begin {
@@ -94,8 +95,13 @@ process {
     }
     
     # Enumerate files, get files of the $FileTypes file types and LastWriteTime older than $OlderThanDays days
-    $Files = $Directory.EnumerateFiles()
-    Write-Verbose "[+] Total amount of files in $Directory`: $($Files.Count.Length)" -Verbose
+    if ($PSBoundParameters.Keys.Contains("IncludesSubDirectories")) {
+        $Files = Get-ChildItem -Path $Directory -File -Recurse -Force
+        Write-Verbose "[+] Total amount of files in $Directory`: $($Files.Count)" -Verbose
+    } else {
+        $Files = $Directory.EnumerateFiles()
+        Write-Verbose "[+] Total amount of files in $Directory`: $($Files.Count.Length)" -Verbose
+    }
         
     # Choose which files to delete depending on which parameter set was used
     switch ($PSCmdlet.ParameterSetName) {
